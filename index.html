@@ -5,524 +5,189 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ResultVault — Student Results Portal</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --bg: #0d0d0d;
-      --surface: #141414;
-      --card: #1a1a1a;
-      --border: #2a2a2a;
-      --accent: #c8f060;
-      --accent2: #60d4f0;
-      --text: #f0ede8;
-      --muted: #6a6a6a;
-      --danger: #f06060;
-      --pass: #60f090;
+      --bg: #0d0d0d; --surface: #141414; --card: #1a1a1a; --border: #2a2a2a;
+      --accent: #c8f060; --accent2: #60d4f0; --text: #f0ede8;
+      --muted: #6a6a6a; --danger: #f06060; --pass: #60f090;
     }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'DM Mono', monospace;
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-
-    /* GRID BACKGROUND */
+    body { background:var(--bg); color:var(--text); font-family:'DM Mono',monospace; min-height:100vh; overflow-x:hidden; }
     body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image:
-        linear-gradient(var(--border) 1px, transparent 1px),
-        linear-gradient(90deg, var(--border) 1px, transparent 1px);
-      background-size: 40px 40px;
-      opacity: 0.35;
-      pointer-events: none;
-      z-index: 0;
+      content:''; position:fixed; inset:0;
+      background-image: linear-gradient(var(--border) 1px,transparent 1px), linear-gradient(90deg,var(--border) 1px,transparent 1px);
+      background-size:40px 40px; opacity:0.35; pointer-events:none; z-index:0;
     }
-
-    .container {
-      position: relative;
-      z-index: 1;
-      max-width: 880px;
-      margin: 0 auto;
-      padding: 40px 24px 80px;
-    }
+    .container { position:relative; z-index:1; max-width:920px; margin:0 auto; padding:40px 24px 80px; }
 
     /* HEADER */
-    header {
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      margin-bottom: 48px;
-      padding-bottom: 24px;
-      border-bottom: 1px solid var(--border);
-    }
-    .logo-block h1 {
-      font-family: 'DM Serif Display', serif;
-      font-size: 2.6rem;
-      line-height: 1;
-      letter-spacing: -0.02em;
-      color: var(--text);
-    }
-    .logo-block h1 span { color: var(--accent); }
-    .logo-block p {
-      font-size: 0.72rem;
-      color: var(--muted);
-      margin-top: 6px;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-    }
-    .header-badge {
-      background: var(--accent);
-      color: #0d0d0d;
-      font-size: 0.65rem;
-      font-weight: 500;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      padding: 4px 10px;
-      border-radius: 2px;
-    }
-    .admin-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(200,240,96,0.1);
-      border: 1px solid rgba(200,240,96,0.35);
-      color: var(--accent);
-      font-size: 0.65rem;
-      font-weight: 500;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      padding: 5px 12px;
-      border-radius: 2px;
-    }
-    .admin-badge::before {
-      content: '◆';
-      font-size: 0.5rem;
-      animation: pulse 2s infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.3; }
-    }
-    /* Tab lock style */
-    .tab-btn.locked {
-      opacity: 0.3;
-      cursor: not-allowed;
-      pointer-events: none;
-    }
-    /* Access denied panel */
-    .access-denied {
-      text-align: center;
-      padding: 60px 32px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      background: var(--card);
-    }
-    .access-denied .lock-icon {
-      font-size: 2.5rem;
-      margin-bottom: 16px;
-      opacity: 0.4;
-    }
-    .access-denied h3 {
-      font-family: 'DM Serif Display', serif;
-      font-size: 1.4rem;
-      margin-bottom: 8px;
-      color: var(--text);
-    }
-    .access-denied p {
-      font-size: 0.78rem;
-      color: var(--muted);
-      line-height: 1.6;
-      max-width: 340px;
-      margin: 0 auto;
-    }
-    .access-denied code {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      padding: 2px 7px;
-      border-radius: 3px;
-      font-size: 0.78rem;
-      color: var(--accent2);
-    }
+    header { display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:48px; padding-bottom:24px; border-bottom:1px solid var(--border); flex-wrap:wrap; gap:12px; }
+    .logo-block h1 { font-family:'DM Serif Display',serif; font-size:2.6rem; line-height:1; letter-spacing:-0.02em; }
+    .logo-block h1 span { color:var(--accent); }
+    .logo-block p { font-size:0.72rem; color:var(--muted); margin-top:6px; letter-spacing:0.12em; text-transform:uppercase; }
+    .header-right { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    .header-badge { background:var(--accent); color:#0d0d0d; font-size:0.65rem; font-weight:500; letter-spacing:0.1em; text-transform:uppercase; padding:5px 10px; border-radius:2px; }
+    .admin-badge { display:inline-flex; align-items:center; gap:6px; background:rgba(200,240,96,0.1); border:1px solid rgba(200,240,96,0.35); color:var(--accent); font-size:0.65rem; font-weight:500; letter-spacing:0.1em; text-transform:uppercase; padding:5px 12px; border-radius:2px; }
+    .admin-badge::before { content:'◆'; font-size:0.5rem; animation:pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+    .source-pill { display:inline-flex; align-items:center; gap:6px; font-size:0.65rem; letter-spacing:0.08em; text-transform:uppercase; padding:5px 12px; border-radius:2px; border:1px solid var(--border); color:var(--muted); transition:all 0.3s; }
+    .source-pill.excel { border-color:rgba(96,212,240,0.4); color:var(--accent2); background:rgba(96,212,240,0.06); }
+    .source-pill.local { border-color:rgba(200,240,96,0.3); color:var(--accent); background:rgba(200,240,96,0.06); }
+    .source-dot { width:6px; height:6px; border-radius:50%; background:currentColor; animation:pulse 2s infinite; }
 
     /* TABS */
-    .tabs {
-      display: flex;
-      gap: 4px;
-      margin-bottom: 32px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      padding: 4px;
-      border-radius: 6px;
-      width: fit-content;
-    }
-    .tab-btn {
-      background: none;
-      border: none;
-      color: var(--muted);
-      font-family: 'DM Mono', monospace;
-      font-size: 0.8rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      padding: 8px 20px;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .tab-btn.active {
-      background: var(--accent);
-      color: #0d0d0d;
-      font-weight: 500;
-    }
-    .tab-btn:not(.active):hover { color: var(--text); background: var(--border); }
+    .tabs { display:flex; gap:4px; margin-bottom:32px; background:var(--surface); border:1px solid var(--border); padding:4px; border-radius:6px; width:fit-content; }
+    .tab-btn { background:none; border:none; color:var(--muted); font-family:'DM Mono',monospace; font-size:0.8rem; letter-spacing:0.08em; text-transform:uppercase; padding:8px 20px; border-radius:4px; cursor:pointer; transition:all 0.2s; }
+    .tab-btn.active { background:var(--accent); color:#0d0d0d; font-weight:500; }
+    .tab-btn:not(.active):hover { color:var(--text); background:var(--border); }
+    .tab-btn.locked { opacity:0.3; cursor:not-allowed; pointer-events:none; }
 
     /* PANELS */
-    .panel { display: none; }
-    .panel.active { display: block; animation: fadeUp 0.3s ease; }
-
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(12px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
+    .panel { display:none; }
+    .panel.active { display:block; animation:fadeUp 0.3s ease; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
 
     /* CARDS */
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 28px 32px;
-      margin-bottom: 20px;
-    }
-    .card-title {
-      font-family: 'DM Serif Display', serif;
-      font-size: 1.3rem;
-      margin-bottom: 20px;
-      color: var(--text);
-    }
-    .card-title span { color: var(--accent2); font-style: italic; }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:28px 32px; margin-bottom:20px; }
+    .card-title { font-family:'DM Serif Display',serif; font-size:1.3rem; margin-bottom:20px; }
+    .card-title span { color:var(--accent2); font-style:italic; }
 
-    /* FORM ELEMENTS */
-    label {
-      display: block;
-      font-size: 0.7rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 6px;
-    }
-    input, select {
-      width: 100%;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      color: var(--text);
-      font-family: 'DM Mono', monospace;
-      font-size: 0.9rem;
-      padding: 10px 14px;
-      border-radius: 4px;
-      margin-bottom: 16px;
-      transition: border-color 0.2s;
-      outline: none;
-    }
-    input:focus, select:focus { border-color: var(--accent); }
-    select option { background: var(--surface); }
+    /* SOURCE TOGGLE */
+    .source-toggle { display:flex; gap:4px; margin-bottom:20px; background:var(--surface); border:1px solid var(--border); padding:3px; border-radius:5px; width:fit-content; }
+    .src-btn { background:none; border:none; color:var(--muted); font-family:'DM Mono',monospace; font-size:0.72rem; letter-spacing:0.08em; text-transform:uppercase; padding:6px 14px; border-radius:3px; cursor:pointer; transition:all 0.2s; }
+    .src-btn.active { background:var(--accent2); color:#0d0d0d; font-weight:500; }
+    .src-btn:not(.active):hover { color:var(--text); background:var(--border); }
 
-    .form-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
-    @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
+    /* EXCEL LOADER */
+    .excel-zone-label { font-size:0.7rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
+    .excel-path-row { display:flex; gap:8px; align-items:center; margin-bottom:16px; }
+    .excel-path-row input { flex:1; margin-bottom:0; font-size:0.8rem; padding:8px 12px; }
+    .drop-zone { border:1px dashed var(--border); border-radius:6px; padding:20px 24px; transition:all 0.2s; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+    .drop-zone.loaded { border-color:rgba(96,212,240,0.4); background:rgba(96,212,240,0.04); }
+    .drop-zone.over { border-color:var(--accent2); background:rgba(96,212,240,0.08); }
+    .drop-label { font-size:0.8rem; color:var(--muted); }
+    .excel-status { display:none; margin-top:12px; }
+    .excel-file-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .excel-filename { font-size:0.8rem; color:var(--accent2); background:rgba(96,212,240,0.08); border:1px solid rgba(96,212,240,0.2); padding:4px 12px; border-radius:3px; max-width:260px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .excel-count { font-size:0.72rem; color:var(--muted); }
 
-    /* SUBJECTS SECTION */
-    .subjects-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-    }
-    .subjects-header label { margin-bottom: 0; }
-    #subject-rows { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
-    .subject-row {
-      display: grid;
-      grid-template-columns: 1fr 90px 90px 30px;
-      gap: 8px;
-      align-items: center;
-    }
-    .subject-row input { margin-bottom: 0; }
-    .del-btn {
-      background: none;
-      border: 1px solid var(--border);
-      color: var(--danger);
-      font-size: 0.85rem;
-      width: 30px;
-      height: 36px;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .del-btn:hover { background: var(--danger); color: #fff; }
+    /* FORM */
+    label { display:block; font-size:0.7rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); margin-bottom:6px; }
+    input, select { width:100%; background:var(--surface); border:1px solid var(--border); color:var(--text); font-family:'DM Mono',monospace; font-size:0.9rem; padding:10px 14px; border-radius:4px; margin-bottom:16px; transition:border-color 0.2s; outline:none; }
+    input:focus, select:focus { border-color:var(--accent); }
+    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    @media(max-width:600px){ .form-row { grid-template-columns:1fr; } }
+
+    /* SUBJECTS */
+    .subjects-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+    .subjects-header label { margin-bottom:0; }
+    #subject-rows { display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
+    .subject-row { display:grid; grid-template-columns:1fr 90px 90px 30px; gap:8px; align-items:center; }
+    .subject-row input { margin-bottom:0; }
+    .del-btn { background:none; border:1px solid var(--border); color:var(--danger); font-size:0.85rem; width:30px; height:36px; border-radius:4px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; justify-content:center; }
+    .del-btn:hover { background:var(--danger); color:#fff; }
 
     /* BUTTONS */
-    .btn {
-      background: var(--accent);
-      color: #0d0d0d;
-      border: none;
-      font-family: 'DM Mono', monospace;
-      font-size: 0.8rem;
-      font-weight: 500;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      padding: 10px 24px;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .btn:hover { background: #d4ff66; transform: translateY(-1px); }
-    .btn-sm {
-      padding: 6px 14px;
-      font-size: 0.7rem;
-    }
-    .btn-outline {
-      background: none;
-      border: 1px solid var(--accent);
-      color: var(--accent);
-    }
-    .btn-outline:hover { background: var(--accent); color: #0d0d0d; }
-    .btn-danger {
-      background: none;
-      border: 1px solid var(--danger);
-      color: var(--danger);
-    }
-    .btn-danger:hover { background: var(--danger); color: #fff; transform: none; }
+    .btn { background:var(--accent); color:#0d0d0d; border:none; font-family:'DM Mono',monospace; font-size:0.8rem; font-weight:500; letter-spacing:0.1em; text-transform:uppercase; padding:10px 24px; border-radius:4px; cursor:pointer; transition:all 0.2s; }
+    .btn:hover { background:#d4ff66; transform:translateY(-1px); }
+    .btn-sm { padding:6px 14px; font-size:0.7rem; }
+    .btn-outline { background:none; border:1px solid var(--accent); color:var(--accent); }
+    .btn-outline:hover { background:var(--accent); color:#0d0d0d; }
+    .btn-blue { background:none; border:1px solid var(--accent2); color:var(--accent2); }
+    .btn-blue:hover { background:var(--accent2); color:#0d0d0d; transform:none; }
+    .btn-danger { background:none; border:1px solid var(--danger); color:var(--danger); }
+    .btn-danger:hover { background:var(--danger); color:#fff; transform:none; }
 
     /* TOAST */
-    #toast {
-      position: fixed;
-      bottom: 32px;
-      right: 32px;
-      background: var(--card);
-      border: 1px solid var(--border);
-      color: var(--text);
-      font-size: 0.8rem;
-      padding: 12px 20px;
-      border-radius: 6px;
-      border-left: 3px solid var(--accent);
-      transform: translateY(80px);
-      opacity: 0;
-      transition: all 0.3s ease;
-      z-index: 100;
-      max-width: 300px;
-    }
-    #toast.show { transform: translateY(0); opacity: 1; }
-    #toast.error { border-left-color: var(--danger); }
+    #toast { position:fixed; bottom:32px; right:32px; background:var(--card); border:1px solid var(--border); color:var(--text); font-size:0.8rem; padding:12px 20px; border-radius:6px; border-left:3px solid var(--accent); transform:translateY(80px); opacity:0; transition:all 0.3s ease; z-index:100; max-width:300px; }
+    #toast.show { transform:translateY(0); opacity:1; }
+    #toast.error { border-left-color:var(--danger); }
 
-    /* RESULT DISPLAY */
-    #result-output { margin-top: 24px; }
-    .result-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      overflow: hidden;
-      animation: fadeUp 0.4s ease;
-    }
-    .result-header {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 20px 28px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-    .result-header-left h2 {
-      font-family: 'DM Serif Display', serif;
-      font-size: 1.5rem;
-    }
-    .result-header-left p {
-      font-size: 0.72rem;
-      color: var(--muted);
-      margin-top: 2px;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-    }
-    .result-meta {
-      display: flex;
-      gap: 20px;
-      flex-wrap: wrap;
-    }
-    .meta-item { text-align: right; }
-    .meta-item .val {
-      font-family: 'DM Serif Display', serif;
-      font-size: 1.4rem;
-      color: var(--accent);
-    }
-    .meta-item .lbl {
-      font-size: 0.65rem;
-      color: var(--muted);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-    }
+    /* RESULT */
+    #result-output { margin-top:24px; }
+    .result-card { background:var(--card); border:1px solid var(--border); border-radius:8px; overflow:hidden; animation:fadeUp 0.4s ease; }
+    .result-header { background:var(--surface); border-bottom:1px solid var(--border); padding:20px 28px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
+    .result-header-left h2 { font-family:'DM Serif Display',serif; font-size:1.5rem; }
+    .result-header-left p { font-size:0.72rem; color:var(--muted); margin-top:2px; letter-spacing:0.1em; text-transform:uppercase; }
+    .result-meta { display:flex; gap:20px; flex-wrap:wrap; }
+    .meta-item { text-align:right; }
+    .meta-item .val { font-family:'DM Serif Display',serif; font-size:1.4rem; color:var(--accent); }
+    .meta-item .lbl { font-size:0.65rem; color:var(--muted); letter-spacing:0.1em; text-transform:uppercase; }
 
-    .subjects-table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    .subjects-table th {
-      font-size: 0.65rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--muted);
-      padding: 12px 28px;
-      text-align: left;
-      border-bottom: 1px solid var(--border);
-    }
-    .subjects-table td {
-      padding: 12px 28px;
-      font-size: 0.88rem;
-      border-bottom: 1px solid #1e1e1e;
-    }
-    .subjects-table tr:last-child td { border-bottom: none; }
-    .pass-tag, .fail-tag {
-      font-size: 0.65rem;
-      font-weight: 500;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      padding: 2px 8px;
-      border-radius: 2px;
-    }
-    .pass-tag { background: rgba(96,240,144,0.1); color: var(--pass); }
-    .fail-tag { background: rgba(240,96,96,0.1); color: var(--danger); }
-    .result-footer {
-      padding: 16px 28px;
-      border-top: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: var(--surface);
-    }
-    .overall-badge {
-      font-family: 'DM Serif Display', serif;
-      font-size: 1rem;
-      padding: 6px 16px;
-      border-radius: 4px;
-    }
-    .overall-badge.pass { background: rgba(96,240,144,0.12); color: var(--pass); border: 1px solid rgba(96,240,144,0.3); }
-    .overall-badge.fail { background: rgba(240,96,96,0.12); color: var(--danger); border: 1px solid rgba(240,96,96,0.3); }
+    /* STAT BAR */
+    .stat-bar { padding:14px 28px; border-bottom:1px solid var(--border); display:flex; gap:28px; flex-wrap:wrap; }
+    .stat-item .s-val { font-size:1.1rem; font-family:'DM Serif Display',serif; }
+    .stat-item .s-lbl { font-size:0.62rem; color:var(--muted); letter-spacing:0.1em; text-transform:uppercase; }
+    .c-correct { color:var(--pass); } .c-wrong { color:var(--danger); } .c-skip { color:var(--muted); } .c-rank { color:var(--accent2); }
 
-    /* MANAGE TABLE */
-    .records-list { display: flex; flex-direction: column; gap: 8px; }
-    .record-row {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      padding: 12px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-      transition: border-color 0.2s;
-    }
-    .record-row:hover { border-color: var(--accent); }
-    .record-info { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
-    .record-roll {
-      font-family: 'DM Serif Display', serif;
-      font-size: 1.1rem;
-      color: var(--accent);
-      min-width: 80px;
-    }
-    .record-name { font-size: 0.88rem; }
-    .record-stats { font-size: 0.75rem; color: var(--muted); }
-    .record-actions { display: flex; gap: 6px; }
-    .empty-state {
-      text-align: center;
-      padding: 48px;
-      color: var(--muted);
-      font-size: 0.85rem;
-      letter-spacing: 0.05em;
-    }
-    .empty-state div { font-size: 2rem; margin-bottom: 12px; opacity: 0.4; }
+    /* Q GRID */
+    .q-breakdown { padding:18px 28px; border-bottom:1px solid var(--border); }
+    .q-breakdown-title { font-size:0.68rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); margin-bottom:12px; }
+    .q-grid { display:flex; flex-wrap:wrap; gap:5px; }
+    .q-cell { width:34px; height:34px; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:0.62rem; font-weight:500; border:1px solid transparent; cursor:default; position:relative; }
+    .q-cell.correct  { background:rgba(96,240,144,0.12); border-color:rgba(96,240,144,0.3); color:var(--pass); }
+    .q-cell.wrong    { background:rgba(240,96,96,0.10);  border-color:rgba(240,96,96,0.3);  color:var(--danger); }
+    .q-cell.skipped  { background:rgba(255,255,255,0.04); border-color:var(--border); color:var(--muted); }
+    .q-cell:hover::after { content:attr(data-tip); position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%); background:#222; border:1px solid var(--border); color:var(--text); font-size:0.62rem; padding:4px 8px; border-radius:3px; white-space:nowrap; z-index:10; pointer-events:none; }
 
-    /* SEARCH BAR */
-    .search-wrap { position: relative; margin-bottom: 16px; }
-    .search-wrap input { padding-left: 40px; margin-bottom: 0; }
-    .search-icon {
-      position: absolute;
-      left: 14px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--muted);
-      font-size: 0.9rem;
-    }
+    /* SUBJECTS TABLE */
+    .subjects-table { width:100%; border-collapse:collapse; }
+    .subjects-table th { font-size:0.65rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); padding:12px 28px; text-align:left; border-bottom:1px solid var(--border); }
+    .subjects-table td { padding:12px 28px; font-size:0.88rem; border-bottom:1px solid #1e1e1e; }
+    .subjects-table tr:last-child td { border-bottom:none; }
+    .pass-tag,.fail-tag { font-size:0.65rem; font-weight:500; letter-spacing:0.08em; text-transform:uppercase; padding:2px 8px; border-radius:2px; }
+    .pass-tag { background:rgba(96,240,144,0.1); color:var(--pass); }
+    .fail-tag { background:rgba(240,96,96,0.1); color:var(--danger); }
+    .result-footer { padding:16px 28px; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; background:var(--surface); flex-wrap:wrap; gap:10px; }
+    .overall-badge { font-family:'DM Serif Display',serif; font-size:1rem; padding:6px 16px; border-radius:4px; }
+    .overall-badge.pass { background:rgba(96,240,144,0.12); color:var(--pass); border:1px solid rgba(96,240,144,0.3); }
+    .overall-badge.fail { background:rgba(240,96,96,0.12); color:var(--danger); border:1px solid rgba(240,96,96,0.3); }
 
-    /* GRADE BADGE */
-    .grade {
-      display: inline-block;
-      width: 28px;
-      height: 28px;
-      line-height: 28px;
-      text-align: center;
-      border-radius: 50%;
-      font-size: 0.75rem;
-      font-weight: 500;
-      background: var(--border);
-      color: var(--muted);
-    }
-    .grade-A { background: rgba(96,240,144,0.15); color: var(--pass); }
-    .grade-B { background: rgba(96,212,240,0.15); color: var(--accent2); }
-    .grade-C { background: rgba(200,240,96,0.15); color: var(--accent); }
-    .grade-D { background: rgba(240,200,96,0.15); color: #f0c060; }
-    .grade-F { background: rgba(240,96,96,0.15); color: var(--danger); }
+    /* MANAGE */
+    .record-row { background:var(--surface); border:1px solid var(--border); border-radius:4px; padding:12px 16px; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; transition:border-color 0.2s; margin-bottom:8px; }
+    .record-row:hover { border-color:var(--accent); }
+    .record-info { display:flex; gap:20px; align-items:center; flex-wrap:wrap; }
+    .record-roll { font-family:'DM Serif Display',serif; font-size:1.1rem; color:var(--accent); min-width:80px; }
+    .record-name { font-size:0.88rem; }
+    .record-stats { font-size:0.75rem; color:var(--muted); }
+    .record-actions { display:flex; gap:6px; }
+    .empty-state { text-align:center; padding:48px; color:var(--muted); font-size:0.85rem; }
+    .empty-state div { font-size:2rem; margin-bottom:12px; opacity:0.4; }
+    .search-wrap { position:relative; margin-bottom:16px; }
+    .search-wrap input { padding-left:40px; margin-bottom:0; }
+    .search-icon { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--muted); }
+    .grade { display:inline-block; width:28px; height:28px; line-height:28px; text-align:center; border-radius:50%; font-size:0.75rem; font-weight:500; background:var(--border); color:var(--muted); }
+    .grade-A { background:rgba(96,240,144,0.15); color:var(--pass); }
+    .grade-B { background:rgba(96,212,240,0.15); color:var(--accent2); }
+    .grade-C { background:rgba(200,240,96,0.15); color:var(--accent); }
+    .grade-D { background:rgba(240,200,96,0.15); color:#f0c060; }
+    .grade-F { background:rgba(240,96,96,0.15); color:var(--danger); }
 
-    hr.divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
-
-    .info-bar {
-      background: rgba(200,240,96,0.06);
-      border: 1px solid rgba(200,240,96,0.15);
-      border-radius: 4px;
-      padding: 10px 16px;
-      font-size: 0.75rem;
-      color: var(--muted);
-      margin-bottom: 20px;
-    }
-    .info-bar span { color: var(--accent); }
-
-    .actions-row {
-      display: flex;
-      gap: 10px;
-      justify-content: flex-end;
-      margin-top: 20px;
-    }
-
-    .export-row {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    /* Scrollbar */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: var(--bg); }
-    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    hr.divider { border:none; border-top:1px solid var(--border); margin:20px 0; }
+    .info-bar { background:rgba(200,240,96,0.06); border:1px solid rgba(200,240,96,0.15); border-radius:4px; padding:10px 16px; font-size:0.75rem; color:var(--muted); margin-bottom:20px; }
+    .info-bar span { color:var(--accent); }
+    .actions-row { display:flex; gap:10px; justify-content:flex-end; margin-top:20px; }
+    .export-row { display:flex; gap:8px; flex-wrap:wrap; }
+    .access-denied { text-align:center; padding:60px 32px; border:1px solid var(--border); border-radius:8px; background:var(--card); }
+    .access-denied .lock-icon { font-size:2.5rem; margin-bottom:16px; opacity:0.4; }
+    .access-denied h3 { font-family:'DM Serif Display',serif; font-size:1.4rem; margin-bottom:8px; }
+    .access-denied p { font-size:0.78rem; color:var(--muted); line-height:1.6; max-width:340px; margin:0 auto; }
+    .access-denied code { background:var(--surface); border:1px solid var(--border); padding:2px 7px; border-radius:3px; font-size:0.78rem; color:var(--accent2); }
+    ::-webkit-scrollbar { width:6px; } ::-webkit-scrollbar-track { background:var(--bg); } ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
   </style>
 </head>
 <body>
-
 <div class="container">
   <header>
     <div class="logo-block">
       <h1>Result<span>Vault</span></h1>
-      <p>Student Results Management Portal</p>
+      <p>Student Results Portal</p>
     </div>
-    <span id="header-badge" class="header-badge">Local Storage</span>
+    <div class="header-right">
+      <span id="source-indicator" class="source-pill"><span class="source-dot"></span>No source</span>
+      <span id="header-badge" class="header-badge">Public</span>
+    </div>
   </header>
 
   <div class="tabs">
@@ -531,19 +196,51 @@
     <button class="tab-btn" id="tab-manage" onclick="switchTab('manage')">⚙️ Manage</button>
   </div>
 
-  <!-- LOOKUP PANEL -->
+  <!-- LOOKUP -->
   <div class="panel active" id="panel-lookup">
+    <div class="source-toggle">
+      <button class="src-btn active" id="src-excel" onclick="setLookupSource('excel')">📊 Excel File</button>
+      <button class="src-btn" id="src-local" onclick="setLookupSource('local')">💾 Local DB</button>
+    </div>
+
+    <div id="excel-section">
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title" style="margin-bottom:16px">Load <span>Excel file</span></div>
+
+        <div class="excel-zone-label">Option A — file already in your GitHub repo</div>
+        <div class="excel-path-row">
+          <input type="text" id="excel-path" placeholder="Block_1_test.xls  or  results/Block_1_test.xlsx" value="Block_1_test.xls"/>
+          <button class="btn btn-blue btn-sm" onclick="loadExcelFromPath()" style="white-space:nowrap">↓ Load</button>
+        </div>
+
+        <div class="excel-zone-label">Option B — upload from device (not saved to repo)</div>
+        <div class="drop-zone" id="drop-zone">
+          <span class="drop-label">Drop .xls / .xlsx here, or</span>
+          <button class="btn btn-blue btn-sm" onclick="document.getElementById('excel-file').click()">Browse</button>
+          <input type="file" id="excel-file" accept=".xls,.xlsx" style="display:none" onchange="loadExcelFromFile(event)"/>
+        </div>
+
+        <div class="excel-status" id="excel-status">
+          <div class="excel-file-row">
+            <span class="excel-filename" id="excel-fname">—</span>
+            <span class="excel-count" id="excel-count"></span>
+            <button class="btn btn-sm btn-danger" onclick="clearExcel()" style="margin-left:auto">✕ Clear</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="card">
       <div class="card-title">Check <span>your result</span></div>
       <label for="lookup-roll">Roll Number</label>
-      <input type="text" id="lookup-roll" placeholder="e.g. 2024CS001" autocomplete="off"
+      <input type="text" id="lookup-roll" placeholder="e.g.  01  or  2024CS001" autocomplete="off"
              onkeydown="if(event.key==='Enter') lookupResult()"/>
       <button class="btn" onclick="lookupResult()">Fetch Result</button>
     </div>
     <div id="result-output"></div>
   </div>
 
-  <!-- PUBLISH PANEL -->
+  <!-- PUBLISH -->
   <div class="panel" id="panel-publish">
     <div id="publish-access-denied" class="access-denied" style="display:none">
       <div class="lock-icon">⛒</div>
@@ -552,48 +249,34 @@
       Append <code>?admin=YOUR_KEY</code> to the URL to access this panel.</p>
     </div>
     <div id="publish-content">
-    <div class="info-bar">
-      Results are stored in <span>localStorage</span> — data persists in this browser. Export JSON to back up or share.
-    </div>
-    <div class="card">
-      <div class="card-title">Publish <span>a result</span></div>
-      <div class="form-row">
-        <div>
-          <label>Roll Number *</label>
-          <input type="text" id="pub-roll" placeholder="2024CS001"/>
+      <div class="info-bar">
+        Results saved here go into <span>localStorage</span>. For file-based results, upload your Excel to the repo and use the Lookup → Excel File mode.
+      </div>
+      <div class="card">
+        <div class="card-title">Publish <span>a result</span></div>
+        <div class="form-row">
+          <div><label>Roll Number *</label><input type="text" id="pub-roll" placeholder="2024CS001"/></div>
+          <div><label>Student Name *</label><input type="text" id="pub-name" placeholder="Full Name"/></div>
         </div>
-        <div>
-          <label>Student Name *</label>
-          <input type="text" id="pub-name" placeholder="Full Name"/>
+        <div class="form-row">
+          <div><label>Class / Program</label><input type="text" id="pub-class" placeholder="B.Tech CSE"/></div>
+          <div><label>Exam / Semester</label><input type="text" id="pub-exam" placeholder="Sem 3 — Nov 2024"/></div>
+        </div>
+        <hr class="divider"/>
+        <div class="subjects-header">
+          <label>Subjects</label>
+          <button class="btn btn-sm btn-outline" onclick="addSubjectRow()">+ Add Subject</button>
+        </div>
+        <div id="subject-rows"></div>
+        <div class="actions-row">
+          <button class="btn btn-sm btn-outline" onclick="clearForm()">Clear</button>
+          <button class="btn" onclick="publishResult()">Publish Result</button>
         </div>
       </div>
-      <div class="form-row">
-        <div>
-          <label>Class / Program</label>
-          <input type="text" id="pub-class" placeholder="B.Tech CSE"/>
-        </div>
-        <div>
-          <label>Exam / Semester</label>
-          <input type="text" id="pub-exam" placeholder="Sem 3 — Nov 2024"/>
-        </div>
-      </div>
-      <hr class="divider"/>
-      <div class="subjects-header">
-        <label>Subjects</label>
-        <button class="btn btn-sm btn-outline" onclick="addSubjectRow()">+ Add Subject</button>
-      </div>
-      <div id="subject-rows">
-        <!-- rows injected here -->
-      </div>
-      <div class="actions-row">
-        <button class="btn btn-sm btn-outline" onclick="clearForm()">Clear</button>
-        <button class="btn" onclick="publishResult()">Publish Result</button>
-      </div>
-    </div>
     </div>
   </div>
 
-  <!-- MANAGE PANEL -->
+  <!-- MANAGE -->
   <div class="panel" id="panel-manage">
     <div id="manage-access-denied" class="access-denied" style="display:none">
       <div class="lock-icon">⛒</div>
@@ -602,373 +285,458 @@
       Append <code>?admin=YOUR_KEY</code> to the URL to access this panel.</p>
     </div>
     <div id="manage-content">
-    <div class="card">
-      <div class="card-title">Manage <span>records</span></div>
-      <div class="search-wrap">
-        <span class="search-icon">⌕</span>
-        <input type="text" id="manage-search" placeholder="Search by roll number or name…" oninput="renderManage()"/>
+      <div class="card">
+        <div class="card-title">Manage <span>records</span></div>
+        <div class="search-wrap">
+          <span class="search-icon">⌕</span>
+          <input type="text" id="manage-search" placeholder="Search by roll number or name…" oninput="renderManage()"/>
+        </div>
+        <div id="manage-list"></div>
+        <div class="export-row" style="margin-top:20px">
+          <button class="btn btn-sm btn-outline" onclick="exportData()">↓ Export JSON</button>
+          <button class="btn btn-sm btn-outline" onclick="triggerImport()">↑ Import JSON</button>
+          <button class="btn btn-sm btn-danger" onclick="clearAll()">✕ Clear All</button>
+          <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)"/>
+        </div>
       </div>
-      <div id="manage-list"></div>
-      <div class="export-row" style="margin-top:20px;">
-        <button class="btn btn-sm btn-outline" onclick="exportData()">↓ Export JSON</button>
-        <button class="btn btn-sm btn-outline" onclick="triggerImport()">↑ Import JSON</button>
-        <button class="btn btn-sm btn-danger" onclick="clearAll()">✕ Clear All</button>
-        <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)"/>
-      </div>
-    </div>
     </div>
   </div>
 </div>
-
-<!-- TOAST -->
 <div id="toast"></div>
 
 <script>
-// ─── STORAGE ────────────────────────────────────────────────────
-const STORE_KEY = 'resultvault_data';
-
-function loadAll() {
-  try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; }
-  catch { return {}; }
-}
-function saveAll(data) {
-  localStorage.setItem(STORE_KEY, JSON.stringify(data));
-}
-
-// ─── TABS ────────────────────────────────────────────────────────
-function switchTab(name) {
-  if ((name === 'publish' || name === 'manage') && !IS_ADMIN) {
-    toast('Admin access required.', true);
-    return;
-  }
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('panel-' + name).classList.add('active');
-  const btns = document.querySelectorAll('.tab-btn');
-  const map = ['lookup','publish','manage'];
-  btns[map.indexOf(name)].classList.add('active');
-  if (name === 'manage') renderManage();
-}
-
-// ─── TOAST ───────────────────────────────────────────────────────
-let toastTimer;
-function toast(msg, error = false) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className = 'show' + (error ? ' error' : '');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.className = '', 3000);
-}
-
-// ─── SUBJECT ROWS ────────────────────────────────────────────────
-let subjectCount = 0;
-
-function addSubjectRow(subj = { name: '', marks: '', max: '100' }) {
-  subjectCount++;
-  const id = subjectCount;
-  const wrap = document.getElementById('subject-rows');
-  const row = document.createElement('div');
-  row.className = 'subject-row';
-  row.id = 'srow-' + id;
-  row.innerHTML = `
-    <input type="text" placeholder="Subject name" value="${esc(subj.name)}" class="s-name"/>
-    <input type="number" placeholder="Marks" min="0" max="9999" value="${esc(subj.marks)}" class="s-marks"/>
-    <input type="number" placeholder="Max" min="1" max="9999" value="${esc(subj.max)}" class="s-max"/>
-    <button class="del-btn" onclick="removeRow(${id})">✕</button>
-  `;
-  wrap.appendChild(row);
-}
-
-function removeRow(id) {
-  const el = document.getElementById('srow-' + id);
-  if (el) el.remove();
-}
-
-function clearForm() {
-  ['pub-roll','pub-name','pub-class','pub-exam'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('subject-rows').innerHTML = '';
-  subjectCount = 0;
-  addSubjectRow();
-}
-
-function esc(s) { return String(s || '').replace(/"/g,'&quot;'); }
-
-// ─── PUBLISH ─────────────────────────────────────────────────────
-function publishResult() {
-  if (!requireAdmin()) return;
-  const roll = document.getElementById('pub-roll').value.trim();
-  const name = document.getElementById('pub-name').value.trim();
-  const cls  = document.getElementById('pub-class').value.trim();
-  const exam = document.getElementById('pub-exam').value.trim();
-
-  if (!roll) return toast('Roll number is required.', true);
-  if (!name) return toast('Student name is required.', true);
-
-  const rows = document.querySelectorAll('#subject-rows .subject-row');
-  const subjects = [];
-  for (const row of rows) {
-    const sname  = row.querySelector('.s-name').value.trim();
-    const marks  = parseFloat(row.querySelector('.s-marks').value);
-    const maxm   = parseFloat(row.querySelector('.s-max').value) || 100;
-    if (!sname) continue;
-    subjects.push({ name: sname, marks: isNaN(marks) ? 0 : marks, max: maxm });
-  }
-  if (subjects.length === 0) return toast('Add at least one subject.', true);
-
-  const data = loadAll();
-  data[roll.toUpperCase()] = { roll: roll.toUpperCase(), name, class: cls, exam, subjects, publishedAt: new Date().toISOString() };
-  saveAll(data);
-  toast(`Result for ${roll.toUpperCase()} published!`);
-  clearForm();
-  renderManage();
-}
-
-// ─── LOOKUP ──────────────────────────────────────────────────────
-function lookupResult() {
-  const raw = document.getElementById('lookup-roll').value.trim();
-  const roll = raw.toUpperCase();
-  const out = document.getElementById('result-output');
-
-  if (!roll) { toast('Enter a roll number.', true); return; }
-
-  const data = loadAll();
-  const r = data[roll];
-  if (!r) {
-    out.innerHTML = `<div class="card" style="text-align:center;color:var(--muted);padding:40px">
-      <div style="font-size:2rem;margin-bottom:8px">✦</div>
-      <div>No result found for <span style="color:var(--accent)">${roll}</span></div>
-      <div style="font-size:0.75rem;margin-top:6px;letter-spacing:0.08em">Check the roll number and try again</div>
-    </div>`;
-    return;
-  }
-
-  let total = 0, maxTotal = 0, failCount = 0;
-  const subjectRows = r.subjects.map(s => {
-    total += s.marks;
-    maxTotal += s.max;
-    const pct = (s.marks / s.max) * 100;
-    const pass = s.marks >= s.max * 0.33;
-    if (!pass) failCount++;
-    const grade = calcGrade(pct);
-    return `<tr>
-      <td>${s.name}</td>
-      <td>${s.marks} / ${s.max}</td>
-      <td>${pct.toFixed(1)}%</td>
-      <td><span class="grade grade-${grade}">${grade}</span></td>
-      <td><span class="${pass ? 'pass-tag' : 'fail-tag'}">${pass ? 'Pass' : 'Fail'}</span></td>
-    </tr>`;
-  }).join('');
-
-  const overallPct = maxTotal > 0 ? (total / maxTotal) * 100 : 0;
-  const overallPass = failCount === 0;
-  const overallGrade = calcGrade(overallPct);
-  const pubDate = new Date(r.publishedAt).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
-
-  out.innerHTML = `
-    <div class="result-card">
-      <div class="result-header">
-        <div class="result-header-left">
-          <h2>${r.name}</h2>
-          <p>${r.roll}${r.class ? ' · ' + r.class : ''}${r.exam ? ' · ' + r.exam : ''}</p>
-        </div>
-        <div class="result-meta">
-          <div class="meta-item">
-            <div class="val">${total}/${maxTotal}</div>
-            <div class="lbl">Total Marks</div>
-          </div>
-          <div class="meta-item">
-            <div class="val">${overallPct.toFixed(1)}%</div>
-            <div class="lbl">Percentage</div>
-          </div>
-          <div class="meta-item">
-            <div class="val" style="font-size:1.6rem">${overallGrade}</div>
-            <div class="lbl">Grade</div>
-          </div>
-        </div>
-      </div>
-      <table class="subjects-table">
-        <thead>
-          <tr>
-            <th>Subject</th>
-            <th>Marks</th>
-            <th>%</th>
-            <th>Grade</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>${subjectRows}</tbody>
-      </table>
-      <div class="result-footer">
-        <span style="font-size:0.72rem;color:var(--muted)">Published on ${pubDate}</span>
-        <span class="overall-badge ${overallPass ? 'pass' : 'fail'}">${overallPass ? '✓ PASSED' : '✗ FAILED'}</span>
-      </div>
-    </div>`;
-}
-
-function calcGrade(pct) {
-  if (pct >= 90) return 'A';
-  if (pct >= 75) return 'B';
-  if (pct >= 60) return 'C';
-  if (pct >= 40) return 'D';
-  return 'F';
-}
-
-// ─── MANAGE ──────────────────────────────────────────────────────
-function renderManage() {
-  const data = loadAll();
-  const q = (document.getElementById('manage-search')?.value || '').toLowerCase();
-  const keys = Object.keys(data).filter(k => {
-    if (!q) return true;
-    return k.toLowerCase().includes(q) || (data[k].name || '').toLowerCase().includes(q);
-  });
-  const list = document.getElementById('manage-list');
-  if (!list) return;
-
-  if (keys.length === 0) {
-    list.innerHTML = `<div class="empty-state"><div>◈</div>${q ? 'No matching records.' : 'No results published yet.'}</div>`;
-    return;
-  }
-
-  list.innerHTML = keys.sort().map(k => {
-    const r = data[k];
-    const total = r.subjects.reduce((a, s) => a + s.marks, 0);
-    const max   = r.subjects.reduce((a, s) => a + s.max, 0);
-    const pct   = max > 0 ? ((total/max)*100).toFixed(1) : '—';
-    return `<div class="record-row">
-      <div class="record-info">
-        <div class="record-roll">${r.roll}</div>
-        <div class="record-name">${r.name}</div>
-        <div class="record-stats">${r.subjects.length} subjects · ${total}/${max} · ${pct}%${r.exam ? ' · ' + r.exam : ''}</div>
-      </div>
-      <div class="record-actions">
-        <button class="btn btn-sm btn-outline" onclick="editRecord('${k}')">Edit</button>
-        <button class="btn btn-sm btn-danger" onclick="deleteRecord('${k}')">Delete</button>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function deleteRecord(roll) {
-  if (!requireAdmin()) return;
-  if (!confirm(`Delete result for ${roll}?`)) return;
-  const data = loadAll();
-  delete data[roll];
-  saveAll(data);
-  toast(`Deleted ${roll}`);
-  renderManage();
-}
-
-function editRecord(roll) {
-  if (!requireAdmin()) return;
-  const data = loadAll();
-  const r = data[roll];
-  if (!r) return;
-  // directly activate publish panel (admin already verified)
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('panel-publish').classList.add('active');
-  document.getElementById('tab-publish').classList.add('active');
-  document.getElementById('pub-roll').value = r.roll;
-  document.getElementById('pub-name').value = r.name;
-  document.getElementById('pub-class').value = r.class || '';
-  document.getElementById('pub-exam').value = r.exam || '';
-  document.getElementById('subject-rows').innerHTML = '';
-  subjectCount = 0;
-  r.subjects.forEach(s => addSubjectRow(s));
-  toast(`Editing ${roll} — re-publish to update`);
-}
-
-function clearAll() {
-  if (!requireAdmin()) return;
-  const data = loadAll();
-  const count = Object.keys(data).length;
-  if (count === 0) return toast('Nothing to clear.', true);
-  if (!confirm(`Delete all ${count} result(s)? This cannot be undone.`)) return;
-  localStorage.removeItem(STORE_KEY);
-  toast('All records cleared.');
-  renderManage();
-}
-
-// ─── IMPORT / EXPORT ─────────────────────────────────────────────
-function exportData() {
-  if (!requireAdmin()) return;
-  const data = loadAll();
-  if (!Object.keys(data).length) return toast('Nothing to export.', true);
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'resultvault_export.json';
-  a.click();
-  toast('Exported!');
-}
-function triggerImport() { document.getElementById('import-file').click(); }
-function importData(e) {
-  if (!requireAdmin()) return;
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    try {
-      const imported = JSON.parse(ev.target.result);
-      const existing = loadAll();
-      const merged = { ...existing, ...imported };
-      saveAll(merged);
-      toast(`Imported ${Object.keys(imported).length} record(s).`);
-      renderManage();
-    } catch { toast('Invalid JSON file.', true); }
-  };
-  reader.readAsText(file);
-  e.target.value = '';
-}
-
-// ─── ADMIN AUTH ──────────────────────────────────────────────────
-// Set your admin key here (change this before deploying!)
-const ADMIN_KEY = 'admin123';
-
-const IS_ADMIN = new URLSearchParams(window.location.search).get('admin') === ADMIN_KEY;
+// ── ADMIN ────────────────────────────────────────────────────────
+const ADMIN_KEY = 'admin123'; // ← change before deploying
+const IS_ADMIN  = new URLSearchParams(window.location.search).get('admin') === ADMIN_KEY;
 
 function initAdminUI() {
   const badge = document.getElementById('header-badge');
-  const tabPublish = document.getElementById('tab-publish');
-  const tabManage  = document.getElementById('tab-manage');
-
+  const tp    = document.getElementById('tab-publish');
+  const tm    = document.getElementById('tab-manage');
   if (IS_ADMIN) {
-    // Show admin badge in header
-    badge.className = 'admin-badge';
+    badge.className   = 'admin-badge';
     badge.textContent = 'Admin Mode';
-
-    // Unlock tabs
-    tabPublish.classList.remove('locked');
-    tabManage.classList.remove('locked');
-
-    // Show content, hide denied
+    tp.classList.remove('locked'); tm.classList.remove('locked');
     document.getElementById('publish-access-denied').style.display = 'none';
     document.getElementById('manage-access-denied').style.display  = 'none';
     document.getElementById('publish-content').style.display = '';
     document.getElementById('manage-content').style.display  = '';
   } else {
-    // Lock tabs visually
-    tabPublish.classList.add('locked');
-    tabManage.classList.add('locked');
-
-    // Show access denied, hide content
+    tp.classList.add('locked'); tm.classList.add('locked');
     document.getElementById('publish-access-denied').style.display = '';
     document.getElementById('manage-access-denied').style.display  = '';
     document.getElementById('publish-content').style.display = 'none';
     document.getElementById('manage-content').style.display  = 'none';
   }
 }
-
-// Guard publish & manage actions at runtime too
 function requireAdmin() {
   if (!IS_ADMIN) { toast('Admin access required.', true); return false; }
   return true;
 }
 
-// ─── INIT ────────────────────────────────────────────────────────
+// ── STORAGE ──────────────────────────────────────────────────────
+const STORE_KEY = 'resultvault_data';
+function loadAll() { try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; } catch { return {}; } }
+function saveAll(d) { localStorage.setItem(STORE_KEY, JSON.stringify(d)); }
+
+// ── EXCEL STATE ──────────────────────────────────────────────────
+let excelData  = {};
+let excelName  = '';
+let lookupMode = 'excel';
+
+/**
+ * Parse SheetJS workbook into student map keyed by roll number.
+ *
+ * Expected sheet columns (matching your Block_1_test.xls):
+ *   A=Exam  B=Exam Set  C=Roll No  D=Name  E=Total Marks  F=Grade
+ *   G=Rank  H=Correct Answers  I=Incorrect Answers  J=Not attempted
+ *   K=Subject name
+ *   Then repeating triplets per question: Options | Key | Marks
+ */
+function parseWorkbook(wb) {
+  const sheet = wb.Sheets[wb.SheetNames[0]];
+  const rows  = XLSX.utils.sheet_to_json(sheet, { header:1, defval:'' });
+  if (rows.length < 2) return {};
+
+  const hdr    = rows[0].map(h => String(h).trim());
+  const col    = name => hdr.indexOf(name);
+
+  const iRoll  = col('Roll No');
+  const iName  = col('Name');
+  const iTotal = col('Total Marks');
+  const iGrade = col('Grade');
+  const iRank  = col('Rank');
+  const iCorr  = col('Correct Answers');
+  const iWrong = col('Incorrect Answers');
+  const iSkip  = col('Not attempted');
+  const iExam  = col('Exam');
+  const iSet   = col('Exam Set');
+
+  // Collect all "Q N Marks" column indices
+  const qMarkCols = hdr.reduce((acc, h, i) => { if (/^Q \d+ Marks$/i.test(h)) acc.push(i); return acc; }, []);
+
+  const result = {};
+  for (let r = 1; r < rows.length; r++) {
+    const row  = rows[r];
+    const roll = String(row[iRoll] ?? '').trim();
+    const name = String(row[iName] ?? '').trim();
+    if (!roll || !name) continue;
+
+    const questions = qMarkCols.map((mi, qi) => {
+      const marks    = parseFloat(row[mi]) || 0;
+      const studentA = String(row[mi - 2] ?? '').trim();
+      const correctA = String(row[mi - 1] ?? '').trim();
+      let status = 'skipped';
+      if (studentA !== '' && studentA !== '0') status = marks > 0 ? 'correct' : 'wrong';
+      return { q: qi + 1, marks, studentAns: studentA, correctAns: correctA, status };
+    });
+
+    result[roll] = {
+      roll, name,
+      exam:         String(row[iExam]  ?? '').trim(),
+      examSet:      String(row[iSet]   ?? '').trim(),
+      totalMarks:   parseFloat(row[iTotal]) || 0,
+      grade:        String(row[iGrade] ?? '').trim(),
+      rank:         String(row[iRank]  ?? '').trim(),
+      correct:      Number(row[iCorr]) || 0,
+      incorrect:    Number(row[iWrong])|| 0,
+      notAttempted: Number(row[iSkip]) || 0,
+      questions,
+    };
+  }
+  return result;
+}
+
+function applyExcel(wb, name) {
+  excelData = parseWorkbook(wb);
+  excelName = name;
+  const count = Object.keys(excelData).length;
+  document.getElementById('excel-status').style.display = '';
+  document.getElementById('excel-fname').textContent    = name;
+  document.getElementById('excel-count').textContent    = `${count} student${count !== 1 ? 's' : ''}`;
+  document.getElementById('drop-zone').classList.add('loaded');
+  updateSourceIndicator();
+  toast(`Loaded ${count} student records from "${name}".`);
+}
+
+function loadExcelFromFile(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try { applyExcel(XLSX.read(ev.target.result, { type:'array' }), file.name); }
+    catch(err) { toast('Parse error: ' + err.message, true); }
+  };
+  reader.readAsArrayBuffer(file);
+  e.target.value = '';
+}
+
+async function loadExcelFromPath() {
+  const path = document.getElementById('excel-path').value.trim();
+  if (!path) return toast('Enter a filename or path.', true);
+  const url = new URL(path, window.location.href).href;
+  toast('Fetching…');
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status} — is the file in your repo?`);
+    const buf = await res.arrayBuffer();
+    applyExcel(XLSX.read(buf, { type:'array' }), path.split('/').pop());
+  } catch(err) { toast('Could not load: ' + err.message, true); }
+}
+
+function clearExcel() {
+  excelData = {}; excelName = '';
+  document.getElementById('excel-status').style.display = 'none';
+  document.getElementById('drop-zone').classList.remove('loaded');
+  document.getElementById('result-output').innerHTML = '';
+  updateSourceIndicator();
+  toast('Excel data cleared.');
+}
+
+// ── SOURCE TOGGLE ────────────────────────────────────────────────
+function setLookupSource(mode) {
+  lookupMode = mode;
+  document.getElementById('src-excel').classList.toggle('active', mode === 'excel');
+  document.getElementById('src-local').classList.toggle('active', mode === 'local');
+  document.getElementById('excel-section').style.display = mode === 'excel' ? '' : 'none';
+  document.getElementById('result-output').innerHTML = '';
+  updateSourceIndicator();
+}
+
+function updateSourceIndicator() {
+  const el = document.getElementById('source-indicator');
+  if (lookupMode === 'excel' && excelName) {
+    el.className = 'source-pill excel';
+    el.innerHTML = `<span class="source-dot"></span>${excelName}`;
+  } else if (lookupMode === 'local') {
+    el.className = 'source-pill local';
+    el.innerHTML = `<span class="source-dot"></span>localStorage`;
+  } else {
+    el.className = 'source-pill';
+    el.innerHTML = `<span class="source-dot"></span>No source loaded`;
+  }
+}
+
+// ── LOOKUP ───────────────────────────────────────────────────────
+function lookupResult() {
+  const roll = document.getElementById('lookup-roll').value.trim();
+  const out  = document.getElementById('result-output');
+  if (!roll) { toast('Enter a roll number.', true); return; }
+  lookupMode === 'excel' ? lookupExcel(roll, out) : lookupLocal(roll.toUpperCase(), out);
+}
+
+function lookupExcel(roll, out) {
+  if (!Object.keys(excelData).length) {
+    out.innerHTML = notFoundCard(roll, 'Load an Excel file first using the panel above.');
+    return;
+  }
+  // Try exact → zero-padded → name match
+  const r = excelData[roll]
+         ?? excelData[roll.padStart(2, '0')]
+         ?? excelData[roll.padStart(3, '0')]
+         ?? Object.values(excelData).find(s => s.name.toLowerCase() === roll.toLowerCase());
+
+  if (!r) { out.innerHTML = notFoundCard(roll); return; }
+
+  const totalQ  = r.correct + r.incorrect + r.notAttempted;
+  const qGrid   = r.questions.map(q =>
+    `<div class="q-cell ${q.status}" data-tip="Q${q.q} · Ans:${q.studentAns||'—'} · Key:${q.correctAns} · ${q.marks>0?'+':'' }${q.marks}">${q.q}</div>`
+  ).join('');
+
+  const gradeClass = 'grade-' + (r.grade || calcGrade(totalQ > 0 ? r.correct / totalQ * 100 : 0));
+
+  out.innerHTML = `
+  <div class="result-card">
+    <div class="result-header">
+      <div class="result-header-left">
+        <h2>${r.name}</h2>
+        <p>Roll: ${r.roll}${r.exam ? ' · ' + r.exam : ''}${r.examSet ? ' · Set ' + r.examSet : ''}</p>
+      </div>
+      <div class="result-meta">
+        <div class="meta-item"><div class="val">${r.totalMarks}</div><div class="lbl">Total Score</div></div>
+        <div class="meta-item"><div class="val">${r.correct}/${totalQ}</div><div class="lbl">Correct</div></div>
+        <div class="meta-item"><div class="val" style="font-size:1.5rem"><span class="grade ${gradeClass}">${r.grade || '—'}</span></div><div class="lbl">Grade</div></div>
+      </div>
+    </div>
+    <div class="stat-bar">
+      <div class="stat-item"><div class="s-val c-correct">${r.correct}</div><div class="s-lbl">✓ Correct</div></div>
+      <div class="stat-item"><div class="s-val c-wrong">${r.incorrect}</div><div class="s-lbl">✗ Wrong</div></div>
+      <div class="stat-item"><div class="s-val c-skip">${r.notAttempted}</div><div class="s-lbl">— Skipped</div></div>
+      <div class="stat-item"><div class="s-val c-rank">#${r.rank || '—'}</div><div class="s-lbl">Rank</div></div>
+    </div>
+    ${r.questions.length ? `
+    <div class="q-breakdown">
+      <div class="q-breakdown-title">Question-by-question breakdown — hover each cell for details</div>
+      <div class="q-grid">${qGrid}</div>
+    </div>` : ''}
+    <div class="result-footer">
+      <span style="font-size:0.72rem;color:var(--muted)">Source: ${excelName}</span>
+      <span class="overall-badge pass">Score: ${r.totalMarks}</span>
+    </div>
+  </div>`;
+}
+
+function lookupLocal(roll, out) {
+  const data = loadAll();
+  const r    = data[roll];
+  if (!r) { out.innerHTML = notFoundCard(roll); return; }
+
+  let total = 0, maxTotal = 0, failCount = 0;
+  const rows = r.subjects.map(s => {
+    total += s.marks; maxTotal += s.max;
+    const pct  = (s.marks / s.max) * 100;
+    const pass = s.marks >= s.max * 0.33;
+    if (!pass) failCount++;
+    const g = calcGrade(pct);
+    return `<tr><td>${s.name}</td><td>${s.marks}/${s.max}</td><td>${pct.toFixed(1)}%</td>
+      <td><span class="grade grade-${g}">${g}</span></td>
+      <td><span class="${pass?'pass-tag':'fail-tag'}">${pass?'Pass':'Fail'}</span></td></tr>`;
+  }).join('');
+
+  const pct  = maxTotal > 0 ? (total / maxTotal) * 100 : 0;
+  const pass = failCount === 0;
+  const g    = calcGrade(pct);
+  const date = new Date(r.publishedAt).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+
+  out.innerHTML = `
+  <div class="result-card">
+    <div class="result-header">
+      <div class="result-header-left">
+        <h2>${r.name}</h2>
+        <p>${r.roll}${r.class?' · '+r.class:''}${r.exam?' · '+r.exam:''}</p>
+      </div>
+      <div class="result-meta">
+        <div class="meta-item"><div class="val">${total}/${maxTotal}</div><div class="lbl">Total Marks</div></div>
+        <div class="meta-item"><div class="val">${pct.toFixed(1)}%</div><div class="lbl">Percentage</div></div>
+        <div class="meta-item"><div class="val" style="font-size:1.5rem">${g}</div><div class="lbl">Grade</div></div>
+      </div>
+    </div>
+    <table class="subjects-table">
+      <thead><tr><th>Subject</th><th>Marks</th><th>%</th><th>Grade</th><th>Status</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="result-footer">
+      <span style="font-size:0.72rem;color:var(--muted)">Published ${date}</span>
+      <span class="overall-badge ${pass?'pass':'fail'}">${pass?'✓ PASSED':'✗ FAILED'}</span>
+    </div>
+  </div>`;
+}
+
+function notFoundCard(roll, hint = 'Check the roll number and try again.') {
+  return `<div class="card" style="text-align:center;color:var(--muted);padding:40px">
+    <div style="font-size:2rem;margin-bottom:8px">✦</div>
+    <div>No result found for <span style="color:var(--accent)">${roll}</span></div>
+    <div style="font-size:0.75rem;margin-top:6px;letter-spacing:0.08em">${hint}</div>
+  </div>`;
+}
+
+function calcGrade(pct) {
+  if (pct >= 90) return 'A'; if (pct >= 75) return 'B';
+  if (pct >= 60) return 'C'; if (pct >= 40) return 'D';
+  return 'F';
+}
+
+// ── TABS ─────────────────────────────────────────────────────────
+function switchTab(name) {
+  if ((name==='publish'||name==='manage') && !IS_ADMIN) { toast('Admin access required.', true); return; }
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  ['lookup','publish','manage'].forEach((t, i) => { if (t===name) document.querySelectorAll('.tab-btn')[i].classList.add('active'); });
+  if (name === 'manage') renderManage();
+}
+
+// ── TOAST ────────────────────────────────────────────────────────
+let toastTimer;
+function toast(msg, err = false) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = 'show' + (err ? ' error' : '');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => el.className = '', 3200);
+}
+
+// ── PUBLISH ──────────────────────────────────────────────────────
+let subjectCount = 0;
+function addSubjectRow(s = { name:'', marks:'', max:'100' }) {
+  subjectCount++;
+  const id = subjectCount, wrap = document.getElementById('subject-rows'), row = document.createElement('div');
+  row.className = 'subject-row'; row.id = 'srow-' + id;
+  row.innerHTML = `<input type="text" placeholder="Subject name" value="${esc(s.name)}" class="s-name"/>
+    <input type="number" placeholder="Marks" value="${esc(s.marks)}" class="s-marks"/>
+    <input type="number" placeholder="Max"   value="${esc(s.max)}"   class="s-max"/>
+    <button class="del-btn" onclick="removeRow(${id})">✕</button>`;
+  wrap.appendChild(row);
+}
+function removeRow(id) { const el = document.getElementById('srow-' + id); if (el) el.remove(); }
+function clearForm() {
+  ['pub-roll','pub-name','pub-class','pub-exam'].forEach(i => document.getElementById(i).value = '');
+  document.getElementById('subject-rows').innerHTML = ''; subjectCount = 0; addSubjectRow();
+}
+function esc(s) { return String(s||'').replace(/"/g,'&quot;'); }
+
+function publishResult() {
+  if (!requireAdmin()) return;
+  const roll = document.getElementById('pub-roll').value.trim();
+  const name = document.getElementById('pub-name').value.trim();
+  const cls  = document.getElementById('pub-class').value.trim();
+  const exam = document.getElementById('pub-exam').value.trim();
+  if (!roll) return toast('Roll number is required.', true);
+  if (!name) return toast('Student name is required.', true);
+  const subjects = [];
+  document.querySelectorAll('#subject-rows .subject-row').forEach(row => {
+    const sname = row.querySelector('.s-name').value.trim();
+    const marks = parseFloat(row.querySelector('.s-marks').value);
+    const maxm  = parseFloat(row.querySelector('.s-max').value) || 100;
+    if (sname) subjects.push({ name:sname, marks:isNaN(marks)?0:marks, max:maxm });
+  });
+  if (!subjects.length) return toast('Add at least one subject.', true);
+  const data = loadAll();
+  data[roll.toUpperCase()] = { roll:roll.toUpperCase(), name, class:cls, exam, subjects, publishedAt:new Date().toISOString() };
+  saveAll(data);
+  toast(`Result for ${roll.toUpperCase()} published!`);
+  clearForm();
+}
+
+// ── MANAGE ───────────────────────────────────────────────────────
+function renderManage() {
+  const data = loadAll();
+  const q    = (document.getElementById('manage-search')?.value||'').toLowerCase();
+  const keys = Object.keys(data).filter(k => !q || k.toLowerCase().includes(q) || (data[k].name||'').toLowerCase().includes(q));
+  const list = document.getElementById('manage-list'); if (!list) return;
+  if (!keys.length) { list.innerHTML = `<div class="empty-state"><div>◈</div>${q?'No matching records.':'No results published yet.'}</div>`; return; }
+  list.innerHTML = keys.sort().map(k => {
+    const r = data[k], total = r.subjects.reduce((a,s)=>a+s.marks,0), max = r.subjects.reduce((a,s)=>a+s.max,0);
+    const pct = max>0?((total/max)*100).toFixed(1):'—';
+    return `<div class="record-row"><div class="record-info">
+      <div class="record-roll">${r.roll}</div><div class="record-name">${r.name}</div>
+      <div class="record-stats">${r.subjects.length} subjects · ${total}/${max} · ${pct}%${r.exam?' · '+r.exam:''}</div>
+    </div><div class="record-actions">
+      <button class="btn btn-sm btn-outline" onclick="editRecord('${k}')">Edit</button>
+      <button class="btn btn-sm btn-danger"  onclick="deleteRecord('${k}')">Delete</button>
+    </div></div>`;
+  }).join('');
+}
+
+function deleteRecord(roll) {
+  if (!requireAdmin()) return;
+  if (!confirm(`Delete result for ${roll}?`)) return;
+  const data = loadAll(); delete data[roll]; saveAll(data); toast(`Deleted ${roll}`); renderManage();
+}
+function editRecord(roll) {
+  if (!requireAdmin()) return;
+  const r = loadAll()[roll]; if (!r) return;
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('panel-publish').classList.add('active');
+  document.getElementById('tab-publish').classList.add('active');
+  ['pub-roll','pub-name','pub-class','pub-exam'].forEach((id,i)=>document.getElementById(id).value=[r.roll,r.name,r.class||'',r.exam||''][i]);
+  document.getElementById('subject-rows').innerHTML=''; subjectCount=0;
+  r.subjects.forEach(s=>addSubjectRow(s));
+  toast(`Editing ${roll} — re-publish to update`);
+}
+function clearAll() {
+  if (!requireAdmin()) return;
+  const c = Object.keys(loadAll()).length; if (!c) return toast('Nothing to clear.',true);
+  if (!confirm(`Delete all ${c} result(s)?`)) return;
+  localStorage.removeItem(STORE_KEY); toast('All records cleared.'); renderManage();
+}
+function exportData() {
+  if (!requireAdmin()) return;
+  const data = loadAll(); if (!Object.keys(data).length) return toast('Nothing to export.',true);
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+  a.download = 'resultvault_export.json'; a.click(); toast('Exported!');
+}
+function triggerImport() { document.getElementById('import-file').click(); }
+function importData(e) {
+  if (!requireAdmin()) return;
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try { const imp=JSON.parse(ev.target.result); saveAll({...loadAll(),...imp}); toast(`Imported ${Object.keys(imp).length} record(s).`); renderManage(); }
+    catch { toast('Invalid JSON file.',true); }
+  };
+  reader.readAsText(file); e.target.value='';
+}
+
+// ── DRAG & DROP ──────────────────────────────────────────────────
+const dz = document.getElementById('drop-zone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('over');
+  const file = e.dataTransfer.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try { applyExcel(XLSX.read(ev.target.result,{type:'array'}), file.name); }
+    catch(err) { toast('Parse error: '+err.message,true); }
+  };
+  reader.readAsArrayBuffer(file);
+});
+
+// ── INIT ─────────────────────────────────────────────────────────
 initAdminUI();
 addSubjectRow();
 renderManage();
+setLookupSource('excel');
 </script>
 </body>
 </html>
