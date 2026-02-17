@@ -166,8 +166,8 @@
       <p>Student Results Portal</p>
     </div>
     <div class="header-pills">
-      <span id="file-pill" class="pill pill-file" style="display:none"></span>
-      <span id="role-pill" class="pill pill-public">Public</span>
+      <span id="file-pill" class="pill pill-file" style="display:none;"></span>
+      <span id="role-pill" class="pill pill-public" style="display:none;">Public</span>
     </div>
   </header>
 
@@ -272,9 +272,11 @@ async function loadExcel() {
     const count = Object.keys(students).length;
 
     // Update UI
-    const fp = document.getElementById('file-pill');
-    fp.style.display = '';
-    fp.textContent   = `${EXCEL_FILE} · ${count} students`;
+    if (IS_ADMIN) {
+      const fp = document.getElementById('file-pill');
+      fp.style.display = '';
+      fp.textContent = `${EXCEL_FILE} · ${count} students`;
+    }
 
     document.getElementById('loading-state').style.display = 'none';
     document.getElementById('lookup-ready').style.display  = '';
@@ -403,9 +405,6 @@ function doLookup() {
       <div class="res-meta">
         <div class="meta"><div class="v">${r.totalMarks}</div><div class="l">Score</div></div>
         <div class="meta"><div class="v">${r.correct}/${totalQ}</div><div class="l">Correct</div></div>
-        <div class="meta"><div class="v" style="font-size:1.4rem">
-          <span class="grade-chip ${gradeClass}">${r.grade || '—'}</span>
-        </div><div class="l">Grade</div></div>
       </div>
     </div>
 
@@ -423,7 +422,6 @@ function doLookup() {
     </div>` : ''}
 
     <div class="res-foot">
-      <span style="font-size:.7rem;color:var(--muted)">Source: ${EXCEL_FILE}</span>
       <span class="badge-pass">Score: ${r.totalMarks}</span>
     </div>
   </div>`;
